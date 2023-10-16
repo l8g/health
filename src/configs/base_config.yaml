@@ -1,0 +1,14 @@
+---
+data_root_path: "/mnt/e/UBFC_DATASET/"                  # raw data path
+dataset_path: "/mnt/e/preprocessed/"                    # preprocessed data save/load path
+model_save_path: "/mnt/e/models/rppg/"                  # model save path
+
+preprocess:
+  flag: true                                            # true: preprocess, false: not preprocess
+  process_num: 5                                       # number of task per process for multiprocessing
+  fixed_position: 1                                     # 0: face tracking, 1: fixed position
+  face_detect_algorithm: 1                              # 1: face recognition, 2: FaceMesh
+  larger_box_coef: 1.5
+  image_size: 128                                       # cropped image size
+  dataset_name: UBFC                                    # dataset name
+
