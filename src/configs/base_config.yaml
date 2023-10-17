@@ -10,5 +10,42 @@ preprocess:
   face_detect_algorithm: 1                              # 1: face recognition, 2: FaceMesh
   larger_box_coef: 1.5
   image_size: 128                                       # cropped image size
-  dataset_name: UBFC                                    # dataset name
+  dataset_name: PURE                                    # dataset name
+
+
+fit:
+  model: DeepPhys
+  time_length: 180                                       # time length of input
+  overlap_interval: 0                                  # overlap interval of input
+  img_size: 128                                        # cropped image size
+  larger_box_coef: 1.5                                 # larger box coefficient
+  train_flag: true                                     # true: train, false: test
+  eval_flag: true                                      # true: eval, false: not eval
+  eval_interval: 100                                     # eval interval
+  debug_flag: true                                    # true: debug, false: not debug
+  model_save_flat: true                                # true: save model, false: not save model
+
+
+  train:
+    dataset_name: PURE                                    # dataset name
+    shuffle: true                                       # true: shuffle, false: not shuffle
+    fs: 30                                              # video fps
+    batch_size: 8                                      # batch size
+    learning_rate: 0.009                               # learning rate
+    epoch: 15                                          # epoch
+    loss: MSE                                          # loss function
+    optimizer: AdamW                                   # optimizer
+
+  test:
+    dataset_name: PURE                                    # dataset name
+    shuffle: false                                      # true: shuffle, false: not shuffle
+    fs: 30                                              # video fps
+    batch_size: 8                                      # batch size
+    vital_type: HR                                     # HR or HRV
+    cal_type : PEAK                                    # PEAK or FFT
+    bpf: None                                          # band pass filter, None: not use, 60~100bpm : [1, 1.67], 45~150bpm : [0.75, 2.5]
+    metric: [MAE, RMSE, MAPE, Pearson]                       # metric
+    eval_time_length: 5                               # second
+
+
 
