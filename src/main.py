@@ -29,7 +29,7 @@ generator.manual_seed(SEED)
 
 
 if __name__ == '__main__':
-    cfg = get_config('../configs/base_config.yaml')
+    cfg = get_config('./configs/base_config.yaml')
     result_save_path = 'result/csv/'
 
     datasets = dataset_loader(fit_cfg=cfg.fit, dataset_path=cfg.dataset_path)

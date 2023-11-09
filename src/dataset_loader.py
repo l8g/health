@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 
 def dataset_loader(fit_cfg, dataset_path):
     model_name = fit_cfg.model
-    dataset_name = [fit_cfg.train.dataset, fit_cfg.test.dataset]
+    dataset_name = [fit_cfg.train.dataset_name, fit_cfg.test.dataset_name]
     time_length = fit_cfg.time_length
     batch_size = fit_cfg.train.batch_size
     overlap_interval = fit_cfg.overlap_interval
@@ -29,6 +29,7 @@ def dataset_loader(fit_cfg, dataset_path):
     if dataset_name[0] == dataset_name[1]:
         root_file_path = save_root_path + dataset_name[0] + '_' + str(img_size) + '_' + str(larger_box_coef).replace('.', '_')
         path = get_all_files_in_path(root_file_path)
+        path = path[:10]
         path_len = len(path)
 
         test_len = 0
@@ -77,6 +78,7 @@ def get_dataset(path, model_name, time_legth, batch_size, overlap_interval, img_
     datasets = []
 
     while True:
+        print(idx, len(path), round_flag)
         if round_flag == 0:
             appearance_data = []
             motion_data = []
@@ -99,11 +101,19 @@ def get_dataset(path, model_name, time_legth, batch_size, overlap_interval, img_
             if len(temp_label) != num_frame:
                 raise ValueError('Label length error')
             label_data.extend(temp_label)
+
+            num_frame = (num_frame // (time_legth * batch_size)) * (time_legth * batch_size)
+            appearance_data = appearance_data[:num_frame]
+            motion_data = motion_data[:num_frame]   
+            label_data = label_data[:num_frame]
+
             file.close()
             round_flag = 2
         elif round_flag == 2:
             if model_name == "DeepPhys":
-                dataset = DeepPhysDataset(appearance_data=appearance_data, motion_data=motion_data, target=label_data)
+                dataset = DeepPhysDataset(appearance_data=np.asarray(appearance_data), 
+                                          motion_data=np.asarray(motion_data), 
+                                          target=np.asarray(label_data))
             else:
                 raise NotImplementedError('Model not implemented (%s)' % model_name)
             datasets.append(dataset)

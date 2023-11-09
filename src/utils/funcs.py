@@ -19,25 +19,36 @@ def detrend(signal, Lambda):
     filterd_signal = np.dot(H - np.linalg.inv(H + (Lambda ** 2) * np.dot(D.T, D)), signal)
     return filterd_signal
 
-def detrend_torch(signal, Lambda = 100):    
-    test_n, length = signal.shape
+def detrend_torch(signals, Lambda=100):
+    """
+    Detrend 1D signals with diagonal matrix D, using torch batch matrix multiplication
+
+    :param signals: Singals with linear trend
+    :param Lambda:
+    :return:
+    """
+    test_n, length = signals.shape
+
     H = torch.eye(length)
     ones = torch.ones(length - 2)
 
-    diag1 = torch.cat((torch.diag(ones), torch.zeros((length - 2), 2)), dim=-1)
-    diag2 = torch.cat((torch.zeros((length - 2), 1), torch.diag(-2 * ones), torch.zeros((length - 2), 1)), dim=-1)
-    diag3 = torch.cat((torch.zeros((length - 2), 2), torch.diag(ones)), dim=-1)
+    diag1 = torch.cat((torch.diag(ones), torch.zeros((length - 2, 2))), dim=-1)
+    diag2 = torch.cat((torch.zeros((length - 2, 1)), torch.diag(-2 * ones), torch.zeros((length - 2, 1))), dim=-1)
+    diag3 = torch.cat((torch.zeros((length - 2, 2)), torch.diag(ones)), dim=-1)
     D = diag1 + diag2 + diag3
 
-    detrended_signal = torch.bmm(signal.unsqueeze(1), H - torch.linalg.inv(H + (Lambda ** 2) * torch.t(D) @ D).cuda().expand(test_n, -1, -1)).squeeze()
+    detrended_signal = torch.bmm(signals.unsqueeze(1),
+                                 (H - torch.linalg.inv(H + (Lambda ** 2) * torch.t(D) @ D)).to('cuda').expand(test_n,
+                                                                                                              -1,
+                                                                                                              -1)).squeeze()
     return detrended_signal
 
 def normalize_torch(input_val):
     if type(input_val) != torch.Tensor:
         input_val = torch.from_numpy(input_val.copy())
-        min = torch.min(input_val, dim=-1, keepdim=True)[0]
-        max = torch.max(input_val, dim=-1, keepdim=True)[0]
-        return (input_val - min) / (max - min)
+    min = torch.min(input_val, dim=-1, keepdim=True)[0]
+    max = torch.max(input_val, dim=-1, keepdim=True)[0]
+    return (input_val - min) / (max - min)
 
 def BPF(input_val, fs = 30, low = 0.75, high = 2.5):
     low = low / (fs / 2)
@@ -59,9 +70,10 @@ def get_hr(rppg, bvp, vital_type = 'HR', cal_type = 'FFT', fs = 30, bpf = None):
     if cal_type not in ["FFT", "PEAK"]:
         raise ValueError("cal_type must be 'FFT' or 'PEAK'")
     
-    bvp = detrend_torch(bvp)
-    rppg = detrend_torch(rppg)
-    if bpf is not None:
+
+    bvp = detrend_torch(torch.cumsum(bvp, dim=-1))
+    rppg = detrend_torch(torch.cumsum(rppg, dim=-1))
+    if bpf != 'None':
         low, high = bpf
         bvp = normalize_torch(BPF(bvp, fs, low, high))
         rppg = normalize_torch(BPF(rppg, fs, low, high))

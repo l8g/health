@@ -28,11 +28,11 @@ def run(model, optimizer, lr_sch, criterion, cfg, dataloaders):
                 eval_flag = True
                 if cfg.fit.model_save_flag:
                     torch.save(model.state_dict(),
-                        f'{save_dir}train{cfg.fit.train.dataset}_test{cfg.fit.test.dataset}_imagesize{str(cfg.fit.img_size)}.pt'
+                        f'{save_dir}_time_length{cfg.fit.time_length}_imagesize{str(cfg.fit.img_size)}.pt'
                     )
             if log:
                 et = cfg.fit.test.eval_time_length
-                if cfg.fit.eval_flag and (eval_flag or (epoch + 1) % cfg.fit.evel_interval == 0):
+                if cfg.fit.eval_flag and (eval_flag or (epoch + 1) % cfg.fit.eval_interval == 0):
                     test_fn(model, dataloaders[2], cfg.fit.test.vital_type, cfg.fit.test.cal_type, cfg.fit.test.bpf, cfg.fit.test.metrics, et)
                     eval_flag = False
 
@@ -54,7 +54,14 @@ def train_fn(epoch, model, optimizer, lr_sch, criterion, dataloader):
         running_loss = 0.0
 
         for te in tepoch:
-            inputs, target = te
+            appearance, motion, target = te
+            _, _, channels, h, w = appearance.shape
+            appearance = appearance.reshape(-1, channels, h, w)
+            motion = motion.reshape(-1, channels, h, w)
+            target = target.reshape(-1, 1)
+            inputs = [appearance.cuda(), motion.cuda()]
+            target = target.cuda()
+            
             optimizer.zero_grad()
             tepoch.set_description(f"{step} Epoch {epoch}")
             outputs = model(inputs)
@@ -62,7 +69,8 @@ def train_fn(epoch, model, optimizer, lr_sch, criterion, dataloader):
 
             if ~torch.isfinite(loss):
                 continue
-            loss.requires_grad = True
+            
+            # loss.requires_grad_(True)
             loss.backward(retain_graph=True)
             running_loss += loss.item()
 
@@ -81,7 +89,14 @@ def val_fn(epoch, model, criterion, dataloader):
         running_loss = 0.0
         with torch.no_grad():
             for te in tepoch:
-                inputs, target = te
+                appearance, motion, target = te
+                _, _, channels, h, w = appearance.shape
+                appearance = appearance.reshape(-1, channels, h, w)
+                motion = motion.reshape(-1, channels, h, w)
+                target = target.reshape(-1, 1)
+                inputs = [appearance.cuda(), motion.cuda()]
+                target = target.cuda()
+
                 tepoch.set_description(f"{step} Epoch {epoch}")
                 outputs = model(inputs)
                 loss = criterion(outputs, target)
@@ -106,10 +121,17 @@ def test_fn(model, dataloaders, vital_type, cal_type, bpf, metrics, eval_time_le
         with torch.no_grad():
             for te in tepoch:
                 torch.cuda.empty_cache()
-                inputs, target = te
+                appearance, motion, target = te
+                _, _, channels, h, w = appearance.shape
+                appearance = appearance.reshape(-1, channels, h, w)
+                motion = motion.reshape(-1, channels, h, w)
+                target = target.reshape(-1, 1)
+                inputs = [appearance.cuda(), motion.cuda()]
+                target = target.cuda()
+
                 outputs = model(inputs)
-                empty_tensor = torch.cat(empty_tensor, outputs.squeeze(), dim=-1)
-                empty_tensor2 = torch.cat(empty_tensor2, target.squeeze(), dim=-1)
+                empty_tensor = torch.cat((empty_tensor, outputs.squeeze()), dim=-1)
+                empty_tensor2 = torch.cat((empty_tensor2, target.squeeze()), dim=-1)
     pred_chunks = torch.stack(list(torch.split(empty_tensor[1:].detach(), interval))[:-1], dim=0)
     target_chunks = torch.stack(list(torch.split(empty_tensor2[1:].detach(), interval))[:-1], dim=0)
 
