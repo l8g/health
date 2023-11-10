@@ -15,6 +15,7 @@ preprocess:
 
 fit:
   model: DeepPhys
+  dataset_name: PURE                                    # dataset name
   time_length: 180                                       # 每个batch的帧数
   overlap_interval: 0                                  # overlap interval of input
   img_size: 128                                        # cropped image size
@@ -30,9 +31,9 @@ fit:
     dataset_name: PURE                                    # dataset name
     shuffle: true                                       # true: shuffle, false: not shuffle
     fs: 30                                              # video fps
-    batch_size: 2                                      # batch size
+    batch_size: 1                                      # batch size
     learning_rate: 0.009                               # learning rate
-    epochs: 15                                          # epoch
+    epochs: 150                                          # epoch
     loss: MSE                                          # loss function
     optimizer: AdamW                                   # optimizer
 
@@ -40,7 +41,7 @@ fit:
     dataset_name: PURE                                    # dataset name
     shuffle: false                                      # true: shuffle, false: not shuffle
     fs: 30                                              # video fps
-    batch_size: 2                                      # batch size
+    batch_size: 1                                      # batch size
     vital_type: HR                                     # HR or HRV
     cal_type : PEAK                                    # PEAK or FFT
     bpf: None                                          # band pass filter, None: not use, 60~100bpm : [1, 1.67], 45~150bpm : [0.75, 2.5]

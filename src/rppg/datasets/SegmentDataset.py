@@ -29,4 +29,4 @@ class SegmentDataset(Dataset):
             label_data = torch.from_numpy(label_data).float()
 
         # 返回转置后的张量
-        return appearance_data, motion_data, label_data
+        return torch.stack((appearance_data, motion_data)), label_data

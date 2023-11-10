@@ -6,6 +6,7 @@ import torch
 from tqdm import tqdm
 
 from utils.funcs import get_hr, MAE, RMSE, MAPE, corr
+from utils.path_name_utils import get_model_file_name
 
 
 def run(model, optimizer, lr_sch, criterion, cfg, dataloaders):
@@ -27,9 +28,7 @@ def run(model, optimizer, lr_sch, criterion, cfg, dataloaders):
                 best_loss = val_loss
                 eval_flag = True
                 if cfg.fit.model_save_flag:
-                    torch.save(model.state_dict(),
-                        f'{save_dir}_time_length{cfg.fit.time_length}_imagesize{str(cfg.fit.img_size)}.pt'
-                    )
+                    torch.save(model.state_dict(), get_model_file_name(cfg, epoch))
             if log:
                 et = cfg.fit.test.eval_time_length
                 if cfg.fit.eval_flag and (eval_flag or (epoch + 1) % cfg.fit.eval_interval == 0):

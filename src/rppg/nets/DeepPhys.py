@@ -28,6 +28,7 @@ class DeepPhys(torch.nn.Module):
         :return:
         original 2d model
         """
+        
         self.attention_mask1, self.attention_mask2 = self.appearance_model(inputs[0])
         motion_output = self.motion_model(inputs[1], self.attention_mask1, self.attention_mask2)
 
