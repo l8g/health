@@ -19,7 +19,7 @@ def create_splits(file_paths, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2):
 
 # 创建DataLoaders的函数
 def create_dataloaders(train_dataset, val_dataset, test_dataset, batch_size):
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     

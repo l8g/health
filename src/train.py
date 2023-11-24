@@ -12,7 +12,7 @@ from rppg.config import get_config
 from rppg.datasets.SegmentDataset import SegmentDataset
 from utils.path_name_utils import get_dataset_directory
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs, device, model_save_path='./models'):
+def train_model(model, train_loader, val_loader, criterion, optimizer, lr_sch, num_epochs, device, model_save_path='./models'):
     os.makedirs(model_save_path, exist_ok=True)
     best_val_loss = float('inf')
     for epoch in range(num_epochs):
@@ -29,10 +29,12 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
 
                 inputs, targets = inputs.to(device), targets.to(device)
                 optimizer.zero_grad()  # 清空之前的梯度
-                outputs = model(inputs)  # 前向传播
-                loss = criterion(outputs, targets)  # 计算损失
+                outputs = model(inputs[1], inputs[0])  # 前向传播
+                loss = criterion(outputs, targets)
                 loss.backward()  # 反向传播
                 optimizer.step()  # 更新参数
+                if lr_sch is not None:
+                    lr_sch.step()
 
                 running_loss += loss.item() * inputs.size(1)
                 tepoch.set_description(f"Train Epoch {epoch+1}/{num_epochs}")
@@ -51,7 +53,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
                     inputs = inputs.reshape(d, -1, c, h, w)
                     targets = targets.reshape(-1, 1)
                     inputs, targets = inputs.to(device), targets.to(device)
-                    outputs = model(inputs)
+                    outputs = model(inputs[1], inputs[0])
                     loss = criterion(outputs, targets)
                     val_loss += loss.item() * inputs.size(1)
                     tepoch.set_description(f"Val Epoch {epoch+1}/{num_epochs}")
@@ -106,9 +108,16 @@ num_epochs = cfg.fit.train.epochs
 # 创建DataLoaders
 train_loader, val_loader, test_loader = create_dataloaders(train_dataset, val_dataset, test_dataset, batch_size)
 
+lr_sch = torch.optim.lr_scheduler.OneCycleLR(
+    optimizer=optimizer,
+    max_lr=cfg.fit.train.learning_rate,
+    steps_per_epoch=len(train_loader),
+    epochs=cfg.fit.train.epochs
+)
+
 # 设置设备
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
 # 开始训练
-train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs, device)
+train_model(model, train_loader, val_loader, criterion, optimizer, lr_sch, num_epochs, device)

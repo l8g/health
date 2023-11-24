@@ -2,7 +2,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
-path = '/mnt/e/preprocessed/UBFC641_5/subject1.hdf5'
+path = '/mnt/e/preprocessed/UBFC_128_1_5/subject1.hdf5'
 
 with h5py.File(path, 'r') as f:
     raw_video = f['raw_video'][:]
@@ -54,7 +54,7 @@ normalized_frame = (rgb_frame - min_val) / (max_val - min_val)
 
 # 绘图
 plt.figure(figsize=(5, 5))
-plt.imshow(normalized_frame)
+plt.imshow(rgb_frame[:,:,0])
 plt.title('RGB Frame')
 plt.axis('off')
 plt.show()

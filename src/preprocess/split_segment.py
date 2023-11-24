@@ -48,7 +48,7 @@ def split_all_files(input_dir : str, out_dir : str, time_length : int):
 
 
 if __name__ == '__main__':
-    input_dir = '/mnt/e/preprocessed/UBFC_128_1_5'
+    input_dir = '/mnt/e/preprocessed/PURE_128_1_5'
     out_dir = '/mnt/e/preprocessed/segments'
     time_length = 180
     split_all_files(input_dir, out_dir, time_length)

@@ -1,5 +1,5 @@
 ---
-data_root_path: "/mnt/e/UBFC_DATASET/"                  # raw data path
+data_root_path: "/mnt/e/DataSets/PURE/"                  # raw data path
 dataset_path: "/mnt/e/preprocessed/"                    # preprocessed data save/load path
 model_save_path: "/mnt/e/models/rppg/"                  # model save path
 
@@ -15,7 +15,7 @@ preprocess:
 
 fit:
   model: DeepPhys
-  dataset_name: PURE                                    # dataset name
+  dataset_name: UBFC                                    # dataset name
   time_length: 180                                       # 每个batch的帧数
   overlap_interval: 0                                  # overlap interval of input
   img_size: 128                                        # cropped image size
@@ -28,17 +28,17 @@ fit:
 
 
   train:
-    dataset_name: PURE                                    # dataset name
+    dataset_name: UBFC                                    # dataset name
     shuffle: true                                       # true: shuffle, false: not shuffle
     fs: 30                                              # video fps
     batch_size: 1                                      # batch size
     learning_rate: 0.009                               # learning rate
-    epochs: 150                                          # epoch
+    epochs: 15                                          # epoch
     loss: MSE                                          # loss function
     optimizer: AdamW                                   # optimizer
 
   test:
-    dataset_name: PURE                                    # dataset name
+    dataset_name: UBFC                                    # dataset name
     shuffle: false                                      # true: shuffle, false: not shuffle
     fs: 30                                              # video fps
     batch_size: 1                                      # batch size

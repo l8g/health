@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+import numpy as np
 import torch
 
 device = torch.device(
@@ -13,6 +15,8 @@ class DeepPhys(torch.nn.Module):
         self.attention_mask1 = None
         self.attention_mask2 = None
 
+        self.show_img = False
+
         self.appearance_model = AppearanceModel(in_channels=self.in_channels, out_channels=self.out_channels,
                                                 kernel_size=self.kernel_size)
         self.motion_model = MotionModel(in_channels=self.in_channels, out_channels=self.out_channels,
@@ -20,17 +24,17 @@ class DeepPhys(torch.nn.Module):
 
         self.linear_model = LinearModel(57600)
 
-    def forward(self, inputs):
-        """
-        :param inputs:
-        inputs[0] : appearance_input
-        inputs[1] : motion_input
-        :return:
-        original 2d model
-        """
-        
-        self.attention_mask1, self.attention_mask2 = self.appearance_model(inputs[0])
-        motion_output = self.motion_model(inputs[1], self.attention_mask1, self.attention_mask2)
+    def forward(self, x_motion, x_appearance):
+
+        if self.show_img:
+            img_data = x_motion[0].permute(1, 2, 0).cpu().numpy()
+            print(np.min(img_data), np.max(img_data), np.mean(img_data), np.std(img_data))
+            plt.imshow(img_data)
+            plt.show()
+            self.show_img = False
+
+        self.attention_mask1, self.attention_mask2 = self.appearance_model(x_appearance)
+        motion_output = self.motion_model(x_motion, self.attention_mask1, self.attention_mask2)
 
         out = self.linear_model(motion_output)
 

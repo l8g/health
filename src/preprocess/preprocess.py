@@ -2,6 +2,7 @@
 import json
 import math
 import multiprocessing
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import sys
@@ -211,7 +212,7 @@ def diff_normalize_video(video_data):
     padd = np.zeros((1, h, w, 6), dtype=np.float32)
     for frame_num in range(frame_total - 1):
         raw_video[:, :, :, :3] = generate_motion_difference(video_data[frame_num], video_data[frame_num + 1])
-    raw_video[:, :, :, 3:] = raw_video[:, :, :, :3] / np.std(raw_video[:, :, :, :3])
+    raw_video[:, :, :, :3] = raw_video[:, :, :, :3] / np.std(raw_video[:, :, :, :3])
     raw_video = np.append(raw_video, padd, axis=0)
     video_data = video_data - np.mean(video_data)
     video_data = video_data / np.std(video_data)
